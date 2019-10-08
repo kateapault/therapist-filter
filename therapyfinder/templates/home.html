@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Home</title>
+  </head>
+  <body>
+    <h3>It can be overwhelming trying to find a therapist. This tool can help get you started.</h3>
+
+    <form method="POST">
+      {{ form.hidden_tag() }}
+      {{ form.user_state.label }} {{ form.user_state() }}
+      <br>
+      {{ form.submit() }}
+    </form>
+  </body>
+</html>
