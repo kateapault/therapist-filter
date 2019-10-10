@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <form method="POST">
+          {{ form.hidden_tag() }}
+
+          <p>What kind of professional are you looking for?</p>
+          <tr>
+            <td>{{ form.psychiatrist }} {{ form.psychiatrist.label }}</td>
+            <td> | </td>
+            <td>{{ form.psychologist }} {{ form.psychologist.label }}</td>
+            <td> | </td>
+            <td>{{ form.therapist }} {{ form.therapist.label }}</td>
+          </tr>
+          <br>
+          {{ form.insurance.label }} {{ form.insurance }}
+          <br>
+          {{ form.mf.label }}
+          <br>
+          {% for subfield in form.mf %}
+          <tr>
+            <td>{{ subfield }}</td>
+            <td>{{ subfield.label }}</td>
+          </tr>
+          {% endfor %}
+          <br>
+          {{ form.user_street.label }} {{ form.user_street }}
+          <br>
+          {{ form.user_city.label }} {{ form.user_city }}
+          <br>
+          {{ form.user_state.label }} {{ form.user_state }}
+          <br>
+          {{ form.submit }}
+    </form>
+
+  </body>
+</html>
