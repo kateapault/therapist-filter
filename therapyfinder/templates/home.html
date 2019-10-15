@@ -9,33 +9,37 @@
     <title>Search</title>
   </head>
   <body>
-    <form method="POST">
-          {{ form.hidden_tag() }}
+    <div class="navbar bg-secondary">
+    <a href="/" class='text-light'>Home</a>
+    </div>
+    <div class="jumbotron">
+      <form method="POST">
+            {{ form.hidden_tag() }}
 
-          <p>What kind of professional are you looking for?</p>
-          <tr>
-            <td>{{ form.psychiatrist }} {{ form.psychiatrist.label }}</td>
-            <td> | </td>
-            <td>{{ form.psychologist }} {{ form.psychologist.label }}</td>
-            <td> | </td>
-            <td>{{ form.therapist }} {{ form.therapist.label }}</td>
-          </tr>
-          <br>
-          {{ form.ind_or_group.label }}
-          <br>
-          {% for subfield in form.ind_or_group %}
-          <tr>
-            <td>{{ subfield }}</td>
-            <td>{{ subfield.label }}</td>
-          </tr>
-          {% endfor %}
-          <br>
-          {{ form.user_city.label }} {{ form.user_city }}
-          <br>
-          {{ form.user_state.label }} {{ form.user_state }}
-          <br>
-          {{ form.submit }}
-    </form>
-
+            <p>What kind of professional are you looking for?</p>
+            <tr>
+              <td>{{ form.psychiatrist }} {{ form.psychiatrist.label }}</td>
+              <td> | </td>
+              <td>{{ form.psychologist }} {{ form.psychologist.label }}</td>
+              <td> | </td>
+              <td>{{ form.therapist }} {{ form.therapist.label }}</td>
+            </tr>
+            <br>
+            {{ form.ind_or_group.label }}
+            <br>
+            {% for subfield in form.ind_or_group %}
+            <tr>
+              <td>{{ subfield }}</td>
+              <td>{{ subfield.label }}</td>
+            </tr>
+            {% endfor %}
+            <br>
+            {{ form.user_city.label }} {{ form.user_city }}
+            <br>
+            {{ form.user_state.label }} {{ form.user_state }}
+            <br>
+            {{ form.submit }}
+      </form>
+    </div>
   </body>
 </html>
