@@ -1,62 +1,51 @@
+'''
+returns list of dicts with info for therapists in specified city and state
+name, jobTitle, addressLocality(=city), addressRegion(=state),postalcode
+offices/groups have no jobTitle attribute
+(from first page of results from PsychologyToday.com)
+'''
+
 from bs4 import BeautifulSoup
 import requests
 
-#input user parameters eventually
+def getPsychData(city, state):
 
-# get results listing of therapists in BK
-# this is only the first page right now
-def getPsychData(city, state, bool):
-    from bs4 import BeautifulSoup
-    import requests
-    urltrue = 'https://www.psychologytoday.com/us/therapists/' + state + '/' + 'city'
-    urlfalse = 'https://www.psychologytoday.com/us/therapists/ny/brooklyn'
+    url = 'https://www.psychologytoday.com/us/therapists/' + state.lower() + '/' + city.lower()
     # header added after running requests.get(url) by itself returned a 403 status code
-    if bool:
-        url = urltrue
-    else: url = urlfalse
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.3 Safari/605.1.15'}
     mainpagehtml = requests.get(url,headers=headers)
-    # make sure page is available
+
     try:
-        # turn html into beautifulsoup object
+        # turn html into BeautifulSoup object
         soup = BeautifulSoup(mainpagehtml.content,'html.parser')
         mainpage = soup.body
-        # filter to just get therapist results. without [0] results is a ResultSet, with [0] it's a Tag
-        th_results = soup.find_all('div',{'class': 'result-row normal-result row'})
 
-        # span is the tag that contains name, job title, address, etc.
-        # Using this for now (eventually will pull profile link and get info from there; this is just to start)
-        # get everything with a span tag
-        th_infolist = []
+        # site uses this div class for therapist listings in results. ResultSet object.
+        therapist_results = soup.find_all('div',{'class': 'result-row normal-result row'})
 
-        for result in th_results:
-            th_spans = th_results.find_all('span')
-            # get list of the properties for each span tag
-            spanitemprops = []
-            for line in th_spans:
-                # if there's an 'itemprop' property, add it to the list spanitemprops
-                if line.get('itemprop'): spanitemprops.append(line.get('itemprop'))
+        # therapist info is in span tags; itemprop attribute gives label for info (eg job title, etc)
+        spans = therapist_results[0].find_all('span')
+        spanitemprops = []
+        for span in spans:
+            if span.get('itemprop'): spanitemprops.append(span.get('itemprop'))
 
-            infodict = {}
-            # list just unique properties
-            spanitemprops_u = set(spanitemprops)
-            # search through t and grab things with those itemprop values ; this can take a list of strings and search for
-            # itemprops that match any string in the list. This produces a list of tags with those matching itemprops
-            propertieslist = th_results('span',{'itemprop':spanitemprops_u})
+        therapists = []
+        for i in range(0,len(therapist_results)):
+            propertieslist = therapist_results[i]('span',{'itemprop':spanitemprops})
+            therapist_info = {}
+            for prop in propertieslist:
+                if prop.get_text():
+        # lots of buttons/subtags that have '\n\n\n' as get_text(), some itemprop attributes (eg city) repeat within listings
+                    if '\n' in prop.get_text(): pass
+                    elif prop.get('itemprop') in therapist_info.keys(): pass
+                    else: therapist_info[prop.get('itemprop')] = prop.get_text()
+            therapists.append(therapist_info)
+        return therapists
 
-            # go through list of matching tags. for each tag, add the itemprop value as dict key and tag's string as dict value
-            for each in propertieslist:
-                if each.get_text():
-                    infodict[each.get('itemprop')] = each.get_text()
-            print(infodict)
-            th_infolist.append(infodict)
-
-        return th_infolist
-    except:
-        print('something went wrong')
+    except Exception as ex:
+        print(ex)
 
 
-getPsychData('Brooklyn','NY',False)
 
 
 # sites to scrape for therapists:
