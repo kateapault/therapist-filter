@@ -2,15 +2,17 @@ from flask import Flask, render_template, session, redirect, url_for
 from flask_wtf import FlaskForm
 from wtforms import BooleanField, RadioField, SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired
+from therscrap import getPsychData
+import pymysql
+import pymysql.cursors
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'placeholder_secret_key'
 
 
 ###### functions and prework ########
-# takes in a list, returns a list where each item in the original list is
-# duplicated and in a tuple with its duplicate
-def make_double_tuple_list(li):
+
+def make_doubled_list_tuples(li):
     out = []
     for item in li:
         out.append((item,item))
@@ -21,7 +23,7 @@ states = ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DC", "DE", "FL", "GA",
           "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
           "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
           "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"]
-state_tuples = make_double_tuple_list(states)
+state_tuples = make_doubled_list_tuples(states)
 
 ######## forms #######################
 
@@ -40,19 +42,18 @@ class FilterForm(FlaskForm):
     submit = SubmitField('Find Doctors')
 
 ######## flask pages ####################
-# home page
+
 @app.route('/',methods=['GET','POST'])
 def home():
-
+# should links to other pages be via python or html?
     return render_template('home.html')
+
 
 @app.route('/search',methods=['GET','POST'])
 def search():
 
     form = FilterForm()
     if form.is_submitted():
-        print('submitted!')
-
         session['psychiatrist'] = form.psychiatrist.data
         session['psychologist'] = form.psychologist.data
         session['therapist'] = form.therapist.data
@@ -70,9 +71,7 @@ def search():
 @app.route('/result')
 def result():
 
-#   SQL stuff here
-#   temp data:
-
+#   temp data to pass into database queries after database is set up
     psychiatrist = session['psychiatrist']
     psychologist = session['psychologist']
     therapist = session['therapist']
@@ -83,9 +82,37 @@ def result():
     user_city = session['user_city']
     user_state = session['user_state']
 
-    return render_template('result.html',user_state=user_state,mf=mf,remote=remote,insurance=insurance,psychiatrist=psychiatrist,psychologist=psychologist,therapist=therapist)
+#   connect to mySQL
+#   Currently using test_docs as test db connection since scraped database isn't built yet
+    host = 'localhost'
+    user = 'root'
+    password='9sthsmrscrthn?'
+    dbname='test_docs'
+    charset='utf8mb4'
+    cursorclass=pymysql.cursors.DictCursor
 
-#page with advice on how to approach therapy
+    connection = pymysql.connect(host='127.0.0.1',
+                        user='root',
+                        password='9sthsmrscrthn?',
+                        db='test_docs',
+                        charset='utf8mb4',
+                        cursorclass=pymysql.cursors.DictCursor)
+#   reading data to existing database
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT `name` FROM 'test_docs'  WHERE `job_title`=%s"
+            cursor.execute(sql, ('psychiatrist',))
+            doc_name = cursor.fetchone()
+            print(doc_name)
+
+#   close connection
+    finally:
+        connection.close()
+
+
+    return render_template('result.html',doc_name=doc_name)
+
+#page with advice on how to approach therapy; currently empty and will be just text
 @app.route('/advice')
 def advice():
     return render_template('advice.html')
