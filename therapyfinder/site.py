@@ -7,8 +7,7 @@ from flask import Flask, render_template, session, redirect, url_for
 from flask_wtf import FlaskForm
 from wtforms import BooleanField, RadioField, SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired
-import therscrap
-from therscrap import getPsychData
+import therapistscraper
 import pymysql
 import pymysql.cursors
 
@@ -65,6 +64,7 @@ def home():
         session['user_city'] = form.user_city.data
         session['user_state'] = form.user_state.data
         session['ind_or_group'] = form.ind_or_group.data
+
         return redirect(url_for('result'))
 
     return render_template('home.html', form=form)
@@ -83,16 +83,7 @@ def result():
     user_state = session['user_state']
     ind_or_group = session['ind_or_group']
 
-    psychdata = getPsychData(user_city,user_state)
-# group listings do not contain a jobTitle
-    psychlist = []
-    if ind_or_group == 'ind':
-        for i in range(len(psychdata)):
-            if 'jobTitle' in psychdata[i].keys(): psychlist.append(psychdata[i])
-    elif ind_or_group == 'gr':
-        for i in range(len(psychdata)):
-            if 'jobTitle' not in psychdata[i].keys(): psychlist.append(psychdata[i])
-    else: psychlist = psychdata
+    psychlist = therapistscraper.scrapeTherapy(user_city,user_state)
 
     return render_template('result.html',psychlist=psychlist)
 

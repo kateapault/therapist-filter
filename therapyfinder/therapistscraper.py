@@ -72,35 +72,41 @@ def findInsurance(pg,insdict):
 # get dict of insurance providers from csv file created earlier by pulling providers
 # from available filters on mainpage. dict providers has insurance providers as keys
 # and False for all values
-with open('providerlist.csv',mode='r') as csvfile:
-    fieldnames = insurancelist
-    reader = csv.DictReader(csvfile)
-    for row in reader:
-        providers = row
+def getInsuranceList():
+    with open('providerlist.csv',mode='r') as csvfile:
+        fieldnames = insurancelist
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            providers = row
+    return providers
 
 ################################################################
 ########################## SCRAPING ############################
 ################################################################
 
-url = 'https://www.psychologytoday.com/us/therapists/' + state.lower() + '/' + city.lower()
-# headers added after running requests.get(url) by itself returned a 403 status code
-headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.3 Safari/605.1.15'}
-mainpagehtml = requests.get(url,headers=headers)
+def scrapeTherapy(city,state):
+    url = 'https://www.psychologytoday.com/us/therapists/' + state.lower() + '/' + city.lower()
+    # headers added after running requests.get(url) by itself returned a 403 status code
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.3 Safari/605.1.15'}
+    mainpagehtml = requests.get(url,headers=headers)
 
-# turn html into BeautifulSoup object
-soup = BeautifulSoup(mainpagehtml.content,'html.parser')
-mainpage = soup.body
+    # turn html into BeautifulSoup object
+    soup = BeautifulSoup(mainpagehtml.content,'html.parser')
+    mainpage = soup.body
 
-# site uses this div class for therapist listings in results. ResultSet object.
-therapist_results = soup.find_all('div',{'class': 'result-row normal-result row'})
+    # site uses this div class for therapist listings in results. ResultSet object.
+    therapist_results = soup.find_all('div',{'class': 'result-row normal-result row'})
 
-# get site ids for therapists taking new patients
-therapist_site_ids = []
-for t in therapist_results:
-    if t.get('data-new-clients')=='1':
-        therapist_site_ids.append(t.get('data-profid'))
+    # get site ids for therapists taking new patients
+    therapist_site_ids = []
+    for t in therapist_results:
+        if t.get('data-new-clients')=='1':
+            therapist_site_ids.append(t.get('data-profid'))
 
-therapists = []
-for siteID in therapist_site_ids:
-    pggg = getPageFromID(siteID)
-    therapists.append(getInfo(pggg,providers))
+    providers = getInsuranceList()
+
+    therapists = []
+    for siteID in therapist_site_ids:
+        pggg = getPageFromID(siteID)
+        therapists.append(getInfo(pggg,providers))
+    return therapists
