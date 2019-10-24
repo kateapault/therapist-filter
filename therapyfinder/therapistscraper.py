@@ -72,13 +72,18 @@ def findInsurance(pg,insdict):
 # get dict of insurance providers from csv file created earlier by pulling providers
 # from available filters on mainpage. dict providers has insurance providers as keys
 # and False for all values
-def getInsuranceList():
-    with open('providerlist.csv',mode='r') as csvfile:
+def getInsuranceDict():
+    with open('providerlist.csv','r') as listfile:
+        reader = csv.reader(listfile)
+        for row in reader:
+            insurancelist = row
+    with open('providerdict.csv',mode='r') as dictfile:
         fieldnames = insurancelist
-        reader = csv.DictReader(csvfile)
+        reader = csv.DictReader(dictfile)
         for row in reader:
             providers = row
-    return providers
+            print(providers)
+            return providers
 
 ################################################################
 ########################## SCRAPING ############################
@@ -103,10 +108,8 @@ def scrapeTherapy(city,state):
         if t.get('data-new-clients')=='1':
             therapist_site_ids.append(t.get('data-profid'))
 
-    providers = getInsuranceList()
-
     therapists = []
     for siteID in therapist_site_ids:
         pggg = getPageFromID(siteID)
-        therapists.append(getInfo(pggg,providers))
+        therapists.append(getInfo(pggg,getInsuranceDict()))
     return therapists
